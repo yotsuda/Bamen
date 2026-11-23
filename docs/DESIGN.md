@@ -164,7 +164,7 @@ shot 3 close        bars 7-8   look alice.face
 - **正面**：対象の腰と肩の線に直角な向きを、カットの全コマ・対象の全員で平均したもの。平均が一方向の 35% に満たない (くるくる回る) ときは、客席の側 (+z) を正面とし、情報 BM2002 で言う。`from` の側はこの正面から測る。
 - **角度**：eye は水平、low は 20° 見上げ、high は 30° 見下ろす。low でカメラが床 (0.2 m) より下に行くときは、入る範囲で傾きを減らし、情報 BM2001 で言う。
 - **カットのコマ**：始まりの秒以後の最初のコマから、終わりの秒より前の最後のコマまで (終わりの秒のコマは次のカットのもの)。
-- **気づいたこと**：3.2 の 5 (動きをすべて含む位置に固定) のため、動き回る対象への close は寄れない。見本の shot 3 (`close look alice.face`、ターンしながら前後に動く) は 3.4 m 離れ、顔は枠の 1/5 ほど。M1 の follow で解けるが、M0 のうちに診断で言うか (「顔が枠の何割にしかならない」) はユーザーに。
+- **気づいたこと**：3.2 の 5 (動きをすべて含む位置に固定) のため、動き回る対象への close は寄れない。見本の shot 3 (`close look alice.face`、ターンしながら前後に動く) は 3.4 m 離れ、顔は枠の 1/5 ほど。M1 の follow で解ける。診断で言うかは M1 の案に回した (4.2 の 9)。
 
 ### 3.2.3 再生と MP4 (2026-11-23、ROADMAP 次の一手 4 で実装。変えるならユーザーに)
 
@@ -183,3 +183,41 @@ shot 3 close        bars 7-8   look alice.face
 - .NET 10 (Shosa と同じ)：`Bamen.Core` (構文、束縛、カメラの解決、診断)、`Bamen.Cli` (`bamen check`、`bamen sheet`、`bamen cameras` = 解いたカメラの JSON)、`Bamen.Lsp`、`Bamen.Tests`、`editors/vscode`。
 - 動きは `shosa clip` の JSON (毎コマの関節) を読む。`shosa` は `BAMEN_SHOSA` → PATH → VS Code の Shosa 拡張の順に探す (Shosa が `lysc` を探すのと同じ形)。
 - プレビューは Shosa のプレビュー (three.js、three-vrm) を写し、カメラを Bamen が解いたものに差し替え、カットで切り替える。MP4 の書き出しも写す。
+
+## 4. M1 の文法 (案、2026-11-23。決めるのはユーザー)
+
+M0 は 2026-11-23 にユーザーが閉じた。M1 の目標：**撮影の言葉で書いた動くカメラ (肩越し、dolly、pan、tilt、orbit、follow) が解かれ、手で置いたカメラと見比べられる**。
+
+### 4.1 見本
+
+```
+title "Dance, the camera moving"
+dance "dance.shosa"
+
+shot 1 wide   eye   bars 1-2   look alice bob carol  dolly in          // wide から一段寄る (medium の構図で終わる)
+shot 2 medium       bars 3-4   look alice  orbit left 90
+shot 3 medium       bars 5-6   over bob  look alice                     // bob の肩越しに alice
+shot 4 close  low   bars 7-8   look alice.face  follow                  // 動き回る顔に寄ったまま付いていく
+shot 5 wide         2s         look carol  pan                          // カメラは立ったまま、首を振って carol を追う
+shot 6 medium       2s         at 3 1.5 4  lens 50  look bob           // 手で置いたカメラ (見比べ用)
+```
+
+### 4.2 決める点
+
+| # | 点 | 第 1 案 | 代わり |
+|---|---|---|---|
+| 1 | 動きの量の書き方 | **構図で書く**。`dolly in` は一段寄った大きさで終わる (wide → medium → close)、`dolly in to close` で行き先を言う。数値 (`dolly in 0.5m`、`orbit left 90`) は上書きとして書ける | 数値で書く (`dolly in 0.5m`)。撮影の現場の言い方に近いが、AI も人も距離を当て推量することになる |
+| 2 | 1 つの shot の動き | **動きは 1 つまで** (dolly、truck、crane、pan、tilt、orbit、follow のどれか)。組み合わせは M1 の後で | 並べて書ける (`dolly in pan`)。解く側が重い |
+| 3 | 動きの時間 | **shot の長さいっぱいに、ゆっくり出てゆっくり止まる** (ease in-out) | 直線 (等速)。または `dolly in bars 2-3` のように shot の中の一部の時間を書く |
+| 4 | `pan` `tilt` の意味 | **量を書かなければ対象を追う** (カメラは立ったまま向きだけ変える。始まりの位置は M0 の固定カメラと同じ解き方)。`pan left 30` で量を言えば対象と関係なく振る | 量は必ず書く (追うのは `follow` だけ) |
+| 5 | `follow` | **対象との距離・側・高さを保って付いていく** (対象の腰の動きを前後のコマでならして揺れを取る。先のコマも分かっているので遅れない)。大きさの意味は M0 と同じだが、「全コマを含む」ではなく各時刻の構図で合わせる | 横に並んで動くだけ (truck)。距離の変化は追わない |
+| 6 | 肩越し | **`over bob look alice`**：カメラは bob の後ろ、bob と alice を結ぶ線の上。bob の肩と頭の一部が手前の端に入る。どちらの肩かは既定で右、`over bob.left` で選ぶ (M2 の 180 度の線が入ったら既定はそちらで決める) | `over` は 2 人の会話の構図 (`ots bob alice`) として別の語にする |
+| 7 | `orbit` | **`orbit left`** (量を書かなければ 90°)、`orbit right 45`。対象の真ん中のまわりを、始まりの距離のまま回る | 量は必ず書く |
+| 8 | 手で置くカメラ | **`at X Y Z`** (メートル、Shosa の座標：+z が客席) と `lens 50` (mm) を節として書ける。`look` が見る先。大きさの語は書かなくてよい | 別の文 (`camera 名前 at …`) で置き、shot から名前で呼ぶ |
+| 9 | 動き回る対象への固定の寄り (3.2.2 の最後) | **診断で言う**：固定カメラで、`look` の対象 (部位なら部位、全身なら大きさの構図) が平均で枠の半分に満たないとき、警告「`follow` か `pan` を」 | 言わない (`sheet` で見れば分かる) |
+
+### 4.3 決めた後の作り (案)
+
+- カメラはコマごとの値になる (M0 は shot に 1 つ)。`bamen cameras` と `preview` の JSON はコマごとの位置・見る点・画角を持ち、拡張はそれをなぞるだけ (固定の shot は全コマ同じ)。
+- `sheet` は動く shot の始め・真ん中・終わりのコマがそのまま動きを見せる。上から見たカメラの道筋は M2 の配置図で。
+- 見比べ：同じ構図を「撮影の言葉」と「手で置いたカメラ (8)」で書いた 2 本の .bamen を並べたシートを `tools` で作る (ROADMAP M1 の見せられるもの)。

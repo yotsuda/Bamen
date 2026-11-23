@@ -12,8 +12,9 @@
 - 固定カメラの解き方は `docs/DESIGN.md` 3.2.2 (レンズは大きさで 35/50/85 mm など、実装で決めた細部)。見本のシートは `tools\build.ps1` が `out\sample\dance.png` に出す。
 - VS Code 拡張 `editors/vscode` (未公開)：Shosa のプレビューを写し、解いたカメラでカットごとに切り替えて再生、MP4 (1920×1080、曲つき) を書く。言語サーバーなしで `bamen preview --stdin` を走らせる。細部は DESIGN.md 3.2.3。`tools\test-extension-host.ps1 -Lily` で本物の VS Code で確かめ済み (診断、MP4 の映像と音、各カットのコマは `bamen sheet` と同じ構図)。
 - 自動で確かめていないこと：Shots の箱の切り替え、再生中の shot の行の強調、カーソルで shot へ飛ぶ (F5 で目で見る)。
-- ユーザーに見てもらうこと：プレビュー (F5) と `out\hosttest\dance.mp4`。DESIGN.md 3.2.2 の最後 (動き回る対象への close は寄れない。診断で言うか)。
-- 次は ROADMAP 次の一手 5 (ユーザーの確認)、その後 M1。
+- **M0 はユーザーが閉じた (2026-11-23)**。
+- M1 の文法の案を `docs/DESIGN.md` 4 に書いた (9 点、各々第 1 案と代わり。動き回る対象への close の診断は 4.2 の 9)。
+- 次は ROADMAP 次の一手 6 (ユーザーが 9 点を決める)、その後 7 (実装)。
 
 ## よく使うコマンド
 

@@ -1,0 +1,11 @@
+bin/
+obj/
+out/
+*.user
+trials/*/*.png
+node_modules/
+dist/
+artifacts/
+*.vsix
+__pycache__/
+trials/*/*/scratch/*.json

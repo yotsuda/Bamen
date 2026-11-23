@@ -44,36 +44,17 @@ public static class CheckReport
 
         foreach (var shot in bound.Shots)
         {
-            double startBeat = BeatAt(dance, shot.Start), endBeat = BeatAt(dance, shot.End);
+            double startBeat = dance.BeatAt(shot.Start), endBeat = dance.BeatAt(shot.End);
             string where = $"{N(shot.Start)}-{N(shot.End)} s ({N(shot.Length)} s), beats {N(startBeat + 1)}-{N(endBeat)}";
             string look = shot.Look.Count > 0 ? string.Join(" ", shot.Look) : "(nothing)";
-            yield return $"  shot {shot.Number}: {where}; {Word(shot.Size)} {Word(shot.Angle)} from {Side(shot.Side)}; look {look}";
+            yield return $"  shot {shot.Number}: {where}; {Words.Of(shot.Size)} {Words.Of(shot.Angle)} from {Words.Of(shot.Side)}; look {look}";
+            if (compilation.Cameras.FirstOrDefault(c => c.Shot == shot) is { } camera)
+            {
+                var p = camera.Position;
+                yield return $"    camera at ({N(p.X)}, {N(p.Y)}, {N(p.Z)}), {N((camera.Aim - p).Length)} m from what it frames, "
+                    + $"{(camera.Pitch == 0 ? "level" : camera.Pitch > 0 ? $"looking up {N(camera.Pitch)}°" : $"looking down {N(-camera.Pitch)}°")}, {camera.FocalLength} mm";
+            }
         }
     }
 
-    /// <summary>The beat (from 0) at a second, through every tempo change: the inverse of <see cref="Dances.Dance.SecondsAt"/>.</summary>
-    private static double BeatAt(Dances.Dance dance, double seconds)
-    {
-        double beat = 0, at = 0;
-        for (int i = 0; i < dance.Tempos.Count; i++)
-        {
-            double length = i + 1 < dance.Tempos.Count ? (dance.Tempos[i + 1].Beat - dance.Tempos[i].Beat) * 60 / dance.Tempos[i].Bpm : double.PositiveInfinity;
-            if (seconds <= at + length)
-                return dance.Tempos[i].Beat + (seconds - at) * dance.Tempos[i].Bpm / 60;
-            at += length;
-            beat = dance.Tempos[i + 1].Beat;
-        }
-        return beat;
-    }
-
-    private static string Word<T>(T value) where T : Enum => value.ToString().ToLowerInvariant();
-
-    private static string Side(ShotSide side) => side switch
-    {
-        ShotSide.FrontLeft => "front-left",
-        ShotSide.FrontRight => "front-right",
-        ShotSide.BackLeft => "back-left",
-        ShotSide.BackRight => "back-right",
-        _ => Word(side),
-    };
 }

@@ -1,7 +1,20 @@
+using Bamen.Core.Cameras;
+
 namespace Bamen.Core.Dances;
 
-/// <summary>One dancer of a dance: every joint at every frame, x y z in metres (y up).</summary>
-public sealed record DanceFigure(string Name, IReadOnlyList<float[]> Frames);
+/// <summary>One dancer of a dance: every joint at every frame, x y z in metres (y up, the audience toward +z).</summary>
+public sealed record DanceFigure(string Name, IReadOnlyList<float[]> Frames)
+{
+    /// <summary>A joint at a frame; a frame before the first or after the last is the first or the last.</summary>
+    public Vec3 Joint(int frame, int joint)
+    {
+        var f = Frames[Math.Clamp(frame, 0, Frames.Count - 1)];
+        return new Vec3(f[joint * 3], f[joint * 3 + 1], f[joint * 3 + 2]);
+    }
+}
+
+/// <summary>A bone to draw between two joints, and the side it is on: c (the middle), l or r.</summary>
+public readonly record struct DanceBone(int A, int B, char Side);
 
 /// <summary>A tempo from a beat on (beats counted from 0).</summary>
 public readonly record struct TempoChange(double Beat, double Bpm);
@@ -17,8 +30,9 @@ public readonly record struct MeterChange(double Beat, int BeatsPerBar);
 public sealed class Dance
 {
     public Dance(string title, double fps, double totalBeats, IReadOnlyList<TempoChange> tempos, IReadOnlyList<MeterChange> meters,
-        IReadOnlyList<string> joints, IReadOnlyList<DanceFigure> figures, string? music)
+        IReadOnlyList<string> joints, IReadOnlyList<DanceFigure> figures, string? music, IReadOnlyList<DanceBone>? bones = null)
     {
+        Bones = bones ?? [];
         Title = title;
         Fps = fps;
         TotalBeats = totalBeats;
@@ -36,6 +50,22 @@ public sealed class Dance
     public IReadOnlyList<MeterChange> Meters { get; }
     public IReadOnlyList<string> Joints { get; }
     public IReadOnlyList<DanceFigure> Figures { get; }
+
+    /// <summary>The bones to draw (`bones` and `boneSides` of the clip); empty when the clip has none.</summary>
+    public IReadOnlyList<DanceBone> Bones { get; }
+
+    /// <summary>
+    /// The frames from one second up to another (frames are evenly spaced in time): the first at or
+    /// after <paramref name="from"/>, the last before <paramref name="to"/> (the frame on it is the next
+    /// shot's), kept inside the dance. At least one.
+    /// </summary>
+    public (int First, int Last) FramesOf(double from, double to)
+    {
+        int end = Math.Max(0, (Figures.Count > 0 ? Figures[0].Frames.Count : 1) - 1);
+        int first = Math.Clamp((int)Math.Ceiling(from * Fps - 1e-6), 0, end);
+        int last = Math.Clamp((int)Math.Ceiling(to * Fps - 1e-6) - 1, first, end);
+        return (first, last);
+    }
 
     /// <summary>The song the dance is danced to (`music` in the Shosa file), or null.</summary>
     public string? Music { get; }
@@ -55,6 +85,21 @@ public sealed class Dance
             seconds += (to - from) * 60 / Tempos[i].Bpm;
         }
         return seconds;
+    }
+
+    /// <summary>The beat (from 0) at a second, through every tempo change: the inverse of <see cref="SecondsAt"/>.</summary>
+    public double BeatAt(double seconds)
+    {
+        double beat = 0, at = 0;
+        for (int i = 0; i < Tempos.Count; i++)
+        {
+            double length = i + 1 < Tempos.Count ? (Tempos[i + 1].Beat - Tempos[i].Beat) * 60 / Tempos[i].Bpm : double.PositiveInfinity;
+            if (seconds <= at + length)
+                return Tempos[i].Beat + (seconds - at) * Tempos[i].Bpm / 60;
+            at += length;
+            beat = Tempos[i + 1].Beat;
+        }
+        return beat;
     }
 
     /// <summary>The beat (from 0) at which a bar (from 1) begins, through every change of time. Bar 1 begins at beat 0.</summary>

@@ -116,7 +116,18 @@ public static class ShosaClipReader
             figures.Add(new DanceFigure(f.GetProperty("name").GetString()!, frames));
         }
         string? music = clip.TryGetProperty("music", out var m) && m.TryGetProperty("file", out var file) ? file.GetString() : null;
-        return new Dance(title, fps, totalBeats, tempos, meters, joints, figures, music);
+        var bones = new List<DanceBone>();
+        if (clip.TryGetProperty("bones", out var bs))
+        {
+            string sides = clip.TryGetProperty("boneSides", out var s) ? s.GetString() ?? "" : "";
+            foreach (var b in bs.EnumerateArray())
+            {
+                int a = b[0].GetInt32(), z = b[1].GetInt32();
+                if (a >= 0 && z >= 0 && a < joints.Count && z < joints.Count)
+                    bones.Add(new DanceBone(a, z, bones.Count < sides.Length ? sides[bones.Count] : 'c'));
+            }
+        }
+        return new Dance(title, fps, totalBeats, tempos, meters, joints, figures, music, bones);
     }
 
     private static (string? Program, string? Problem) Find()

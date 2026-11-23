@@ -1,3 +1,4 @@
+using Bamen.Core.Cameras;
 using Bamen.Core.Dances;
 using Bamen.Core.Semantics;
 using Bamen.Core.Syntax;
@@ -6,19 +7,23 @@ namespace Bamen.Core;
 
 /// <summary>
 /// The pipeline in one place: text -> SyntaxTree -> BoundFile (the dance read, the shots in
-/// seconds). The camera solver comes after (ROADMAP M0, step 3).
+/// seconds) -> the solved camera of each shot.
 /// </summary>
 public sealed class BamenCompilation
 {
-    private BamenCompilation(SyntaxTree tree, BoundFile bound, List<Diagnostic> diagnostics)
+    private BamenCompilation(SyntaxTree tree, BoundFile bound, IReadOnlyList<SolvedCamera> cameras, List<Diagnostic> diagnostics)
     {
         Tree = tree;
         Bound = bound;
+        Cameras = cameras;
         Diagnostics = diagnostics;
     }
 
     public SyntaxTree Tree { get; }
     public BoundFile Bound { get; }
+
+    /// <summary>The camera of every shot that could be solved (it has a time, a size and something to look at), in source order.</summary>
+    public IReadOnlyList<SolvedCamera> Cameras { get; }
 
     /// <summary>Syntax and meaning diagnostics together, in source order.</summary>
     public IReadOnlyList<Diagnostic> Diagnostics { get; }
@@ -32,7 +37,8 @@ public sealed class BamenCompilation
         var tree = SyntaxTree.Parse(text);
         var diagnostics = new List<Diagnostic>(tree.Diagnostics);
         var bound = Binder.Bind(tree, dances, folder, diagnostics);
-        return new BamenCompilation(tree, bound, diagnostics.OrderBy(d => d.Span.Start).ToList());
+        var cameras = CameraSolver.Solve(bound, diagnostics);
+        return new BamenCompilation(tree, bound, cameras, diagnostics.OrderBy(d => d.Span.Start).ToList());
     }
 
     /// <summary>1-based line and column of a position in the text.</summary>

@@ -4,7 +4,8 @@ param(
     [switch]$Publish,                   # also publish bamen.exe self-contained for win-x64 into -Out
     [string]$Out = "$PSScriptRoot\..\out\cli"
 )
-# Builds the solution (Bamen.slnx), runs the tests, then `bamen check` on samples\dance.bamen: the sample
+# Builds the solution (Bamen.slnx), runs the tests, then `bamen check` on samples\dance.bamen (and its
+# cameras and sheet into out\sample): the sample
 # is read through `shosa clip` (BAMEN_SHOSA, the PATH, then the Shosa extension for VS Code), so this also
 # says whether a shosa is found. With -Publish, bamen.exe goes to out\cli. Publishes nothing anywhere else.
 $ErrorActionPreference = 'Stop'
@@ -25,6 +26,13 @@ if (-not $NoTest) {
     "checking samples\dance.bamen"
     & $bamen check "$root\samples\dance.bamen"
     if ($LASTEXITCODE -ne 0) { throw "bamen check samples\dance.bamen failed (exit $LASTEXITCODE)" }
+    # Its cameras and its sheet, into out\sample, to look at.
+    $sample = "$root\out\sample"
+    New-Item -ItemType Directory -Force $sample | Out-Null
+    & $bamen cameras "$root\samples\dance.bamen" -o "$sample\dance.cameras.json"
+    if ($LASTEXITCODE -ne 0) { throw "bamen cameras samples\dance.bamen failed (exit $LASTEXITCODE)" }
+    & $bamen sheet "$root\samples\dance.bamen" -o "$sample\dance.png"
+    if ($LASTEXITCODE -ne 0) { throw "bamen sheet samples\dance.bamen failed (exit $LASTEXITCODE)" }
 }
 
 if ($Publish) {

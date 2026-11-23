@@ -14,6 +14,8 @@
 ## よく使うコマンド
 
 ```
+tools\build.ps1                     # ビルド、テスト、見本の check (本物の shosa で)。-NoTest、-Configuration Release
+tools\build.ps1 -Publish            # さらに bamen.exe を自己完結で out\cli へ
 dotnet test Bamen.slnx
 dotnet build Bamen.Cli
 Bamen.Cli\bin\Debug\net10.0\bamen.exe check samples\dance.bamen   # shosa は BAMEN_SHOSA → PATH → VS Code の Shosa 拡張の順に探す

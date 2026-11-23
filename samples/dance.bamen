@@ -1,0 +1,8 @@
+// Shosa's dance (samples\dance.shosa: three dancers, song.lys's Verse and Chorus) in three shots.
+// The two .shosa and .lys files are copies of Shosa's samples.
+title "Dance in three shots"
+dance "dance.shosa"                     // the dancers, their movement and the song (music "song.lys")
+
+shot 1 wide   eye   bars 1-4   look alice bob carol
+shot 2 medium low   bars 5-6   look alice
+shot 3 close        bars 7-8   look alice.face

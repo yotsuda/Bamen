@@ -7,7 +7,17 @@
 
 - この日にリポジトリを作った。中身は文書だけで、コードはまだない。
 - 製品の大きな絵、リポジトリを Shosa と分けた理由、名前 (Konte を退けて Bamen) は `docs/DESIGN.md` 1〜2 (ユーザーと決めた)。
-- M0 の文法は案 (`docs/DESIGN.md` 3)。**3.2 の 7 点をユーザーが決めてから実装に入る**。
+- M0 の文法の 7 点 (`docs/DESIGN.md` 3.2) は、ユーザーが 7 点とも第 1 案に決めた。実装で決めた細部は 3.2.1。
+- M0 の骨組みは入った：`Bamen.Core` (Syntax：字句と構文、Semantics：束縛と時間、Dances：`shosa clip` を走らせて読む、Output：check の報告)、`Bamen.Cli` (`bamen check` だけ)、`Bamen.Tests` (17 件)。LSP と拡張はまだ。
+- 次は ROADMAP 次の一手 3：固定カメラを解き (`Bamen.Core` に Camera を足す)、`bamen cameras` と `bamen sheet`。
+
+## よく使うコマンド
+
+```
+dotnet test Bamen.slnx
+dotnet build Bamen.Cli
+Bamen.Cli\bin\Debug\net10.0\bamen.exe check samples\dance.bamen   # shosa は BAMEN_SHOSA → PATH → VS Code の Shosa 拡張の順に探す
+```
 
 ## 最初に読むもの
 

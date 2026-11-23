@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Bamen.Core/Bamen.Core.csproj" />
+  <Project Path="Bamen.Cli/Bamen.Cli.csproj" />
+  <Project Path="Bamen.Tests/Bamen.Tests.csproj" />
+</Solution>

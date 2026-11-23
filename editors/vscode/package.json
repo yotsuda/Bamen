@@ -1,0 +1,102 @@
+{
+  "name": "bamen",
+  "displayName": "Bamen",
+  "description": "Write the camera and the cuts as text, and watch the moving storyboard beside the source.",
+  "version": "0.0.1",
+  "publisher": "yotsuda",
+  "author": "Yoshifumi Tsuda",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "bamen",
+        "aliases": [
+          "Bamen",
+          "bamen"
+        ],
+        "extensions": [
+          ".bamen"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bamen",
+        "scopeName": "source.bamen",
+        "path": "./syntaxes/bamen.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "bamen.openPreview",
+        "title": "Bamen: Open Preview to the Side",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "bamen.exportVideo",
+        "title": "Bamen: Export MP4 Video…"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "bamen.openPreview",
+          "when": "editorLangId == bamen",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "bamen.openPreview",
+          "when": "editorLangId == bamen"
+        },
+        {
+          "command": "bamen.exportVideo",
+          "when": "editorLangId == bamen"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Bamen",
+      "properties": {
+        "bamen.cli.path": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "The `bamen` program the extension runs to read a file. Empty: the one the package carries, else the one `dotnet build` leaves in the repository."
+        },
+        "bamen.playback.soundFont": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "A sound font (.sf2, .sf3, .dls) for the song when Lily# cannot hand out its parts. Empty: what Shosa and Lily# play with."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pixiv/three-vrm": "3.5.5",
+    "mp4-muxer": "5.2.2",
+    "spessasynth_core": "4.3.22",
+    "spessasynth_lib": "4.3.14",
+    "three": "0.160.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.0",
+    "@types/vscode": "1.95.0",
+    "esbuild": "0.21.5",
+    "typescript": "5.4.5"
+  }
+}

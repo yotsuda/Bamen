@@ -29,7 +29,9 @@ It does not render the final picture, model in 3D, or make movement (Shosa and o
 
 ## Status
 
-Planning. The design and the plan are in Japanese: `docs/DESIGN.md`, `docs/ROADMAP.md`.
+A prototype (M0): fixed cameras, `bamen check`, `bamen cameras` (JSON), `bamen sheet` (PNG), and a VS Code
+extension (`editors/vscode`, not published) whose preview plays the dance cut by cut and writes an MP4 with
+the song. The design and the plan are in Japanese: `docs/DESIGN.md`, `docs/ROADMAP.md`.
 
 ## License
 

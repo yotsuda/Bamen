@@ -43,6 +43,12 @@ public sealed class Dance
         Music = music;
     }
 
+    /// <summary>
+    /// The clip as `shosa clip` wrote it (the one score shot), JSON: the preview draws the dancers from it
+    /// as Shosa's own preview does. Null when the dance was not read from a clip (a test's).
+    /// </summary>
+    public string? ClipJson { get; init; }
+
     public string Title { get; }
     public double Fps { get; }
     public double TotalBeats { get; }
@@ -69,6 +75,9 @@ public sealed class Dance
 
     /// <summary>The song the dance is danced to (`music` in the Shosa file), or null.</summary>
     public string? Music { get; }
+
+    /// <summary>The Shosa file the dance was read from, in full; null when it was not read from a file.</summary>
+    public string? File { get; init; }
 
     public double TotalSeconds => SecondsAt(TotalBeats);
 

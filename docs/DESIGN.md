@@ -166,6 +166,18 @@ shot 3 close        bars 7-8   look alice.face
 - **カットのコマ**：始まりの秒以後の最初のコマから、終わりの秒より前の最後のコマまで (終わりの秒のコマは次のカットのもの)。
 - **気づいたこと**：3.2 の 5 (動きをすべて含む位置に固定) のため、動き回る対象への close は寄れない。見本の shot 3 (`close look alice.face`、ターンしながら前後に動く) は 3.4 m 離れ、顔は枠の 1/5 ほど。M1 の follow で解けるが、M0 のうちに診断で言うか (「顔が枠の何割にしかならない」) はユーザーに。
 
+### 3.2.3 再生と MP4 (2026-11-23、ROADMAP 次の一手 4 で実装。変えるならユーザーに)
+
+- **言語サーバーはまだ作らず、拡張が CLI を走らせる**：編集のたび (300 ms 待って) `bamen preview FILE --stdin` に保存前のテキストを渡し、JSON を 1 つ受け取る (Shosa の clip をそのまま、各 shot の時間・ソースの行・解いたカメラ、診断)。診断は編集画面に出す。LSP (補完、ホバー) は要るときに。
+- **プレビューは Shosa のを写した** (`editors/vscode/src/preview`、main.js 以外は手を入れていない)。main.js の変更：
+  - **Shots の箱** (既定で入)：各時刻のカメラはその時刻の shot のもの (位置、見る点、縦の画角)。画面は 16:9 に固定 (カメラは 16:9 で解いてある)。外すと Shosa の自由なカメラ。
+  - shot の隙間では直前に始まった shot、最初の shot の前では最初の shot のカメラ。再生と MP4 は最後の shot の終わりで止まる (踊りの終わりより先には行かない)。
+  - 再生中は今の shot の行を編集画面で光らせ、右上に「2  medium  low  alice」と出す。カーソルを shot の行に置くとその shot の始まりへ、画面を押すと今の shot の行へ。
+  - Shosa の clip の spans と sections は .shosa のオフセットなので使わない。Model と Audio の書き出し、手足を押して語へ飛ぶのは外した。
+- **MP4** は Shosa と同じ (ページの中で WebCodecs の H.264 と AAC、1920×1080、30 コマ)。見本で 17.8 秒、書き出しは 4 秒ほど。
+- **曲**：Lily# 0.17 以降のパート (stems) が第一、なければ `lysc notes` の音符を音源 (sound font) で鳴らす (Shosa の言語サーバーが答えるのと同じ。lysc は Lily# 拡張のもの)。この PC の Lily# は 0.16.0 なので音符の方で鳴る。
+- 踊りの持つ人物の VRM と曲のファイルは .shosa の隣から探す (.bamen の隣ではない)。
+
 ### 3.3 M0 の実装の形 (案)
 
 - .NET 10 (Shosa と同じ)：`Bamen.Core` (構文、束縛、カメラの解決、診断)、`Bamen.Cli` (`bamen check`、`bamen sheet`、`bamen cameras` = 解いたカメラの JSON)、`Bamen.Lsp`、`Bamen.Tests`、`editors/vscode`。

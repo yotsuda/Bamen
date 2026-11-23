@@ -35,7 +35,7 @@ public static class ShosaClipReader
             var (exit, _, error) = Run(program, ["clip", path, "-o", json]);
             if (!File.Exists(json))
                 return DanceLoad.Failed($"shosa could not read {written}: {FirstLine(error) ?? $"exit code {exit}"}");
-            var dance = Parse(File.ReadAllText(json), out string? note);
+            var dance = Parse(File.ReadAllText(json), out string? note, path);
             if (dance is null)
                 return DanceLoad.Failed($"shosa's clip of {written} could not be read: {note}");
             // The dance has mistakes of its own: Bamen shoots it as Shosa solved it, and says so.
@@ -56,7 +56,7 @@ public static class ShosaClipReader
     /// The clip JSON of `shosa clip`. A file of several scores gives an array: M0 shoots the first
     /// (the unnamed one, when there is one) and says so in <paramref name="note"/>.
     /// </summary>
-    public static Dance? Parse(string json, out string? note)
+    public static Dance? Parse(string json, out string? note, string? file = null)
     {
         note = null;
         try
@@ -75,9 +75,9 @@ public static class ShosaClipReader
                 if (chosen.ValueKind != JsonValueKind.Object)
                     chosen = clips[0];
                 note = $"The dance has {clips.Count} scores; the first ({Label(chosen)}) is shot.";
-                return FromClip(chosen);
+                return FromClip(chosen, file);
             }
-            return FromClip(root);
+            return FromClip(root, file);
         }
         catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
         {
@@ -89,7 +89,7 @@ public static class ShosaClipReader
     private static string Label(JsonElement clip) =>
         clip.TryGetProperty("name", out var n) && n.GetString() is { Length: > 0 } name ? $"score {name}" : "the unnamed score";
 
-    private static Dance FromClip(JsonElement clip)
+    private static Dance FromClip(JsonElement clip, string? file)
     {
         string title = clip.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "";
         double fps = clip.GetProperty("fps").GetDouble();
@@ -115,7 +115,7 @@ public static class ShosaClipReader
                 .ToList();
             figures.Add(new DanceFigure(f.GetProperty("name").GetString()!, frames));
         }
-        string? music = clip.TryGetProperty("music", out var m) && m.TryGetProperty("file", out var file) ? file.GetString() : null;
+        string? music = clip.TryGetProperty("music", out var m) && m.TryGetProperty("file", out var song) ? song.GetString() : null;
         var bones = new List<DanceBone>();
         if (clip.TryGetProperty("bones", out var bs))
         {
@@ -127,7 +127,7 @@ public static class ShosaClipReader
                     bones.Add(new DanceBone(a, z, bones.Count < sides.Length ? sides[bones.Count] : 'c'));
             }
         }
-        return new Dance(title, fps, totalBeats, tempos, meters, joints, figures, music, bones);
+        return new Dance(title, fps, totalBeats, tempos, meters, joints, figures, music, bones) { ClipJson = clip.GetRawText(), File = file };
     }
 
     private static (string? Program, string? Problem) Find()

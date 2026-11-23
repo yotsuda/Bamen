@@ -8,10 +8,12 @@
 - この日にリポジトリを作った。中身は文書だけで、コードはまだない。
 - 製品の大きな絵、リポジトリを Shosa と分けた理由、名前 (Konte を退けて Bamen) は `docs/DESIGN.md` 1〜2 (ユーザーと決めた)。
 - M0 の文法の 7 点 (`docs/DESIGN.md` 3.2) は、ユーザーが 7 点とも第 1 案に決めた。実装で決めた細部は 3.2.1。
-- M0 の骨組みは入った：`Bamen.Core` (Syntax：字句と構文、Semantics：束縛と時間、Dances：`shosa clip` を走らせて読む、Cameras：固定カメラの解決、Output：check の報告・カメラの JSON・絵コンテのシート、Canvas は Shosa の写し)、`Bamen.Cli` (`bamen check`、`cameras`、`sheet`)、`Bamen.Tests` (29 件)。LSP と拡張はまだ。
+- M0 の骨組みは入った：`Bamen.Core` (Syntax：字句と構文、Semantics：束縛と時間、Dances：`shosa clip` を走らせて読む、Cameras：固定カメラの解決、Output：check の報告・カメラの JSON・絵コンテのシート・プレビューの JSON、Canvas は Shosa の写し)、`Bamen.Cli` (`bamen check`、`cameras`、`sheet`、`preview`)、`Bamen.Tests` (30 件)。LSP はまだ。
 - 固定カメラの解き方は `docs/DESIGN.md` 3.2.2 (レンズは大きさで 35/50/85 mm など、実装で決めた細部)。見本のシートは `tools\build.ps1` が `out\sample\dance.png` に出す。
-- ユーザーに見てもらうこと：DESIGN.md 3.2.2 の最後 (動き回る対象への close は寄れない。診断で言うか)。
-- 次は ROADMAP 次の一手 4：Shosa のプレビューを写して、カットで切り替わる再生と MP4。
+- VS Code 拡張 `editors/vscode` (未公開)：Shosa のプレビューを写し、解いたカメラでカットごとに切り替えて再生、MP4 (1920×1080、曲つき) を書く。言語サーバーなしで `bamen preview --stdin` を走らせる。細部は DESIGN.md 3.2.3。`tools\test-extension-host.ps1 -Lily` で本物の VS Code で確かめ済み (診断、MP4 の映像と音、各カットのコマは `bamen sheet` と同じ構図)。
+- 自動で確かめていないこと：Shots の箱の切り替え、再生中の shot の行の強調、カーソルで shot へ飛ぶ (F5 で目で見る)。
+- ユーザーに見てもらうこと：プレビュー (F5) と `out\hosttest\dance.mp4`。DESIGN.md 3.2.2 の最後 (動き回る対象への close は寄れない。診断で言うか)。
+- 次は ROADMAP 次の一手 5 (ユーザーの確認)、その後 M1。
 
 ## よく使うコマンド
 
@@ -23,6 +25,9 @@ dotnet build Bamen.Cli
 Bamen.Cli\bin\Debug\net10.0\bamen.exe check samples\dance.bamen   # shosa は BAMEN_SHOSA → PATH → VS Code の Shosa 拡張の順に探す
 Bamen.Cli\bin\Debug\net10.0\bamen.exe cameras samples\dance.bamen [-o x.json]   # 解いたカメラの JSON
 Bamen.Cli\bin\Debug\net10.0\bamen.exe sheet samples\dance.bamen [-o x.png]      # 各カットの最初・真ん中・最後のコマのシート
+Bamen.Cli\bin\Debug\net10.0\bamen.exe preview samples\dance.bamen [--stdin] [-o x.json]   # 拡張が読む JSON
+cd editors\vscode; npm install; npm run build; npx tsc --noEmit   # 拡張 (F5 は .vscode\launch.json)
+tools\test-extension-host.ps1 [-Lily]   # 本物の VS Code で拡張を試す。MP4 と各カットのコマを out\hosttest へ。-Lily で曲つき
 ```
 
 ## 最初に読むもの

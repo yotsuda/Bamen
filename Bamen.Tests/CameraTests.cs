@@ -219,6 +219,32 @@ public class CameraTests
     }
 
     [Fact]
+    public void ThePreviewGetsTheClipTheShotsAndTheDiagnostics()
+    {
+        var made = Dance(("alice", _ => Pose(0, 0, 0)));
+        var dance = new Dance(made.Title, made.Fps, made.TotalBeats, made.Tempos, made.Meters, made.Joints, made.Figures, null, made.Bones)
+        {
+            ClipJson = """{"fps":10,"figures":[{"name":"alice"}]}""",
+            File = @"C:\d.shosa",
+        };
+        string text = "dance \"d.shosa\"\nshot 1 wide 4s look alice\nshot 2 close low 4s look alice.face from left\nshot 3 wide 1s look nobody\n";
+        var c = BamenCompilation.Compile(text, (_, _) => new DanceLoad(dance, null));
+        using var json = JsonDocument.Parse(PreviewJson.Write(c));
+        var root = json.RootElement;
+        Assert.Equal(@"C:\d.shosa", root.GetProperty("dance").GetString());
+        Assert.Equal("alice", root.GetProperty("clip").GetProperty("figures")[0].GetProperty("name").GetString());   // as shosa wrote it
+        var shots = root.GetProperty("shots");
+        Assert.Equal(2, shots.GetArrayLength());   // shot 3 looks at no one: no camera
+        var second = shots[1];
+        Assert.Equal((4.0, 8.0), (second.GetProperty("start").GetDouble(), second.GetProperty("end").GetDouble()));
+        // Its line in the source, for the editor to light up while it plays.
+        Assert.StartsWith("shot 2", text.Substring(second.GetProperty("src").GetInt32(), second.GetProperty("len").GetInt32()));
+        Assert.Equal("close  low  from left  alice.face", second.GetProperty("label").GetString());
+        Assert.Equal(13.59, second.GetProperty("verticalFov").GetDouble(), 2);
+        Assert.Contains(root.GetProperty("diagnostics").EnumerateArray(), d => d.GetProperty("severity").GetString() == "error");
+    }
+
+    [Fact]
     public void TheSheetHasARowForEveryShot()
     {
         var dance = Dance(("alice", _ => Pose(0, 0, 0)), ("bob", _ => Pose(1, -1, 0)));

@@ -1,0 +1,15 @@
+{
+  "name": "Bamen",
+  "scopeName": "source.bamen",
+  "patterns": [
+    { "name": "comment.line.double-slash.bamen", "match": "//.*$" },
+    { "name": "string.quoted.double.bamen", "begin": "\"", "end": "\"" },
+    { "name": "keyword.control.bamen", "match": "\\b(title|dance|shot)\\b" },
+    { "name": "keyword.other.size.bamen", "match": "\\b(wide|medium|close)\\b" },
+    { "name": "keyword.other.angle.bamen", "match": "\\b(eye|low|high)\\b" },
+    { "name": "keyword.other.clause.bamen", "match": "\\b(look|from|bars|beats)\\b" },
+    { "name": "support.constant.side.bamen", "match": "\\b(front|back)(-(left|right))?\\b|\\b(left|right)\\b" },
+    { "name": "constant.numeric.bamen", "match": "\\b\\d+(\\.\\d+)?s?(-\\d+(\\.\\d+)?s?)?\\b" },
+    { "name": "variable.other.part.bamen", "match": "(?<=\\.)(face|head|chest|hips|hands|leftHand|rightHand|feet)\\b" }
+  ]
+}
